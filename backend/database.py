@@ -15,3 +15,10 @@ def create_buses_table():
 
     conn.commit()
     conn.close()
+    
+def get_db():
+    conn = get_connection()
+    try:
+        yield conn
+    finally:
+        conn.close()
