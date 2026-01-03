@@ -20,7 +20,7 @@ def create_bus_timings():
     conn = get_connection()
     cursor = conn.cursor()
     
-    cursor.execute("CREATE TABLE bus_timings(timing_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id))")    
+    cursor.execute("CREATE TABLE IF NOT EXISTS bus_timings(timing_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id))")    
     
     conn.commit()
     conn.close()
