@@ -26,6 +26,35 @@ def get_all_buses(db: Connection = Depends(get_db)):
     cursor.close()
     return [dict(row) for row in rows]
 
+@app.put("/buses/{bus_id}")
+def update_bus(bus_id: int, bus: CreateBuses, db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = ?",(bus_id,)).fetchone()
+    
+    if existing is None:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Bus not found")
+    
+    cursor.execute("UPDATE buses SET bus_no = ?, bus_type = ?, start_bus = ?, end_bus = ? WHERE bus_id = ?",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus, bus_id))
+    
+    db.commit()
+    cursor.close()
+    return {"message": "Bus updated successfully"}
+
+@app.delete("/buses/{bus_id}")
+def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = ?",(bus_id,)).fetchone()
+    
+    if existing is None:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Bus not found")
+
+    cursor.execute("DELETE FROM buses WHERE bus_id = ?",(bus_id,))    
+    db.commit()
+    return {"message":"Bus deleted successfully"}  
 
 @app.post("/bus_timings")
 def bus_timings(time: CreateBusTimings, db: Connection = Depends(get_db)):
@@ -44,3 +73,4 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
     if not rows:
         raise HTTPException(status_code=404, detail="Bus not found")
     return [dict(row) for row in rows]
+
