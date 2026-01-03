@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from database import create_buses_table, get_db, create_bus_timings
 from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings
 from sqlite3 import Connection
@@ -41,4 +41,6 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
     cursor = db.cursor()
     rows = cursor.execute("SELECT b.bus_id, b.bus_no, b.bus_type, b.start_bus, b.end_bus, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE b.bus_id = ? ORDER BY t.trip_time",(bus_id,)).fetchall()
     cursor.close()
+    if not rows:
+        raise HTTPException(status_code=404, detail="Bus not found")
     return [dict(row) for row in rows]
