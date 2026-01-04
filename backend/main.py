@@ -90,3 +90,13 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Bus not found")
     return [dict(row) for row in rows]
 
+@app.get("/routes/buses")
+def show_buses(source: str, destination: str, db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    data = cursor.execute("SELECT * FROM buses WHERE start_bus = ? AND end_bus = ?",(source, destination)).fetchall()
+    cursor.close()
+    
+    if not data:
+        raise HTTPException(status_code=404, detail="No buses in this route")
+    return [dict(d) for d in data]
