@@ -10,13 +10,22 @@ app = FastAPI()
 def startup():
     create_buses_table() 
     create_bus_timings()
+    
+# Basic route to check if the API is running
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Bus Management API"}
+
+# POST route to add new buses
 @app.post("/buses")
 def add_buses(bus: CreateBuses, db: Connection = Depends(get_db)):
     cursor = db.cursor()
     cursor.execute("INSERT INTO buses (bus_no, bus_type, start_bus, end_bus) VALUES (?, ?, ?, ?)",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus))
     db.commit()
     return {"message": "Bus added successfully"}
+
+# GET route to fetch all buses
 
 @app.get("/buses", response_model=List[Buses])
 def get_all_buses(db: Connection = Depends(get_db)):
@@ -25,6 +34,8 @@ def get_all_buses(db: Connection = Depends(get_db)):
     rows = cursor.execute("SELECT * FROM buses").fetchall()
     cursor.close()
     return [dict(row) for row in rows]
+
+# PUT route to update bus details
 
 @app.put("/buses/{bus_id}")
 def update_bus(bus_id: int, bus: CreateBuses, db: Connection = Depends(get_db)):
@@ -42,6 +53,8 @@ def update_bus(bus_id: int, bus: CreateBuses, db: Connection = Depends(get_db)):
     cursor.close()
     return {"message": "Bus updated successfully"}
 
+# DELETE route to remove a bus
+
 @app.delete("/buses/{bus_id}")
 def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -56,6 +69,8 @@ def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
     db.commit()
     return {"message":"Bus deleted successfully"}  
 
+# POST route to add bus timings
+
 @app.post("/bus_timings")
 def bus_timings(time: CreateBusTimings, db: Connection = Depends(get_db)):
     cursor = db.cursor()
@@ -64,6 +79,7 @@ def bus_timings(time: CreateBusTimings, db: Connection = Depends(get_db)):
     cursor.close()
     return {"message":"Timings added successfully"}
 
+# GET route to fetch bus timings by bus ID
 
 @app.get("/bus_timings/{bus_id}", response_model=List[BusesWithTimings])
 def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
