@@ -72,9 +72,11 @@ def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
 # POST route to add bus timings
 
 @app.post("/bus_timings")
-def bus_timings(time: CreateBusTimings, db: Connection = Depends(get_db)):
+def bus_timings(time: List[CreateBusTimings], db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("INSERT INTO bus_timings(bus_id, trip_time) VALUES(?, ?)",(time.bus_id, time.trip_time))    
+    
+    multiple_data_insertion = [(t.bus_id, t.trip_time) for t in time]
+    cursor.executemany("INSERT INTO bus_timings(bus_id, trip_time) VALUES(?, ?)",multiple_data_insertion)    
     db.commit()
     cursor.close()
     return {"message":"Timings added successfully"}
@@ -90,11 +92,12 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Bus not found")
     return [dict(row) for row in rows]
 
+# Source ---> Destination
 @app.get("/routes/buses")
 def show_buses(source: str, destination: str, db: Connection = Depends(get_db)):
     cursor = db.cursor()
     
-    data = cursor.execute("SELECT * FROM buses WHERE start_bus = ? AND end_bus = ?",(source, destination)).fetchall()
+    data = cursor.execute("SELECT * FROM buses WHERE LOWER(start_bus) = ? AND LOWER(end_bus) = ?",(source.lower(), destination.lower())).fetchall()
     cursor.close()
     
     if not data:
