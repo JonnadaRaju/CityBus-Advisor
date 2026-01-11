@@ -3,6 +3,7 @@ from database import create_buses_table, get_db, create_bus_timings
 from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings
 from sqlite3 import Connection
 from typing import List
+from datetime import datetime
 
 app = FastAPI()
 
@@ -92,14 +93,25 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Bus not found")
     return [dict(row) for row in rows]
 
-# Source ---> Destination
-@app.get("/routes/buses")
-def show_buses(source: str, destination: str, db: Connection = Depends(get_db)):
+
+@app.get("/routes/buses/timings")
+def show_buses_with_timings(source: str, destination: str, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    
-    data = cursor.execute("SELECT * FROM buses WHERE LOWER(start_bus) = ? AND LOWER(end_bus) = ?",(source.lower(), destination.lower())).fetchall()
+
+    current_time = datetime.now().strftime("%H:%M")
+
+    rows = cursor.execute("SELECT b.bus_no, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE LOWER(b.start_bus) = ? AND LOWER(b.end_bus) = ? AND t.trip_time > ? ORDER BY t.trip_time",(source.lower(), destination.lower(), current_time)).fetchall()
+
     cursor.close()
+
+    if not rows:
+        raise HTTPException(status_code=404,detail="No upcoming buses for today")
+
+    return [
+        {
+            "bus_no": row["bus_no"],
+            "trip_time": row["trip_time"]
+        }
+        for row in rows
+    ]
     
-    if not data:
-        raise HTTPException(status_code=404, detail="No buses in this route")
-    return [dict(d) for d in data]
