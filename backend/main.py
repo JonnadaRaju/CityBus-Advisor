@@ -95,17 +95,21 @@ def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
 
 
 @app.get("/routes/buses/timings")
-def show_buses_with_timings(source: str, destination: str, bus_no: str | None = None, db: Connection = Depends(get_db)):
+def show_buses_with_timings(source: str, destination: str, bus_no: str | None = None, bus_type: str | None = None, db: Connection = Depends(get_db)):
     cursor = db.cursor()
 
     current_time = datetime.now().strftime("%H:%M")
 
-    query = "SELECT b.bus_no, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE LOWER(b.start_bus) = ? AND LOWER(b.end_bus) = ? AND t.trip_time > ?"
+    query = "SELECT b.bus_no, b.bus_type, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE LOWER(b.start_bus) = ? AND LOWER(b.end_bus) = ? AND t.trip_time > ?"
     params = [source.lower(), destination.lower(), current_time]
     
     if bus_no:
         query += " AND LOWER(b.bus_no) = ?"
         params.append(bus_no.lower())
+        
+    if bus_type:
+        query += " AND LOWER(b.bus_type) = ?"
+        params.append(bus_type.lower())
         
     query += " ORDER BY t.trip_time"
     
