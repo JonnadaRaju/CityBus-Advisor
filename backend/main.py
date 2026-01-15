@@ -119,11 +119,18 @@ def show_buses_with_timings(source: str, destination: str, bus_no: str | None = 
     if not rows:
         raise HTTPException(status_code=404,detail="No upcoming buses for today")
 
-    return [
-        {
-            "bus_no": row["bus_no"],
-            "trip_time": row["trip_time"]
-        }
-        for row in rows
-    ]
+    grouped = {}
     
+    for row in rows:
+        bus = row["bus_no"] 
+        
+        if bus not in grouped:
+            grouped[bus] = {
+                "bus_no": row["bus_no"],
+                "bus_type": row["bus_type"],
+                "timings": []
+            }
+            
+        grouped[bus]["timings"].append(row["trip_time"])
+    
+    return list(grouped.values())
