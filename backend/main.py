@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
-from database import create_buses_table, get_db, create_bus_timings
-from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings
+from database import create_buses_table, get_db, create_bus_timings, create_stops_table
+from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, BusStops
 from sqlite3 import Connection
 from typing import List
 from datetime import datetime
@@ -11,6 +11,7 @@ app = FastAPI()
 def startup():
     create_buses_table() 
     create_bus_timings()
+    create_stops_table()
     
 # Basic route to check if the API is running
 
@@ -129,8 +130,46 @@ def show_buses_with_timings(source: str, destination: str, bus_no: str | None = 
                 "bus_no": row["bus_no"],
                 "bus_type": row["bus_type"],
                 "timings": []
-            }
-            
+                }
         grouped[bus]["timings"].append(row["trip_time"])
     
     return list(grouped.values())
+
+@app.post("/stops")
+def create_stops(stop: BusStops, db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    stop_name = stop.stop_name.strip().lower()
+    
+    try:
+        cursor.execute("INSERT INTO stops(stop_name) VALUES(?)",(stop_name,))
+        db.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Stop already exists")
+    finally:
+        cursor.close()
+    
+    return {"message":"Bus Stop added successfully"}
+
+@app.get("/stops", response_model=List[BusStops])
+def get_stops(db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    rows = cursor.execute("SELECT * FROM stops").fetchall()
+    cursor.close()
+    
+    return [dict(row) for row in rows]  
+
+@app.delete("/stops/{stop_id}")
+def delete_stops(stop_id: int, db: Connection = Depends(get_db)):       
+    cursor = db.cursor()
+    
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?",(stop_id,)).fetchone()
+    
+    if existing is None:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Stop not found")
+
+    cursor.execute("DELETE FROM stops WHERE stop_id = ?",(stop_id,))    
+    db.commit()
+    return {"message":"Bus Stop deleted successfully"}
