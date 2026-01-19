@@ -25,7 +25,16 @@ def create_bus_timings():
     conn.commit()
     conn.close()
     
-def get_db():
+def create_stops_table():
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id INTEGER PRIMARY KEY AUTOINCREMENT, stop_name TEXT NOT NULL)")
+    
+    conn.commit()
+    conn.close()
+    
+def get_db()
     conn = get_connection()
     try:
         yield conn
