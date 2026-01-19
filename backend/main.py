@@ -160,6 +160,28 @@ def get_stops(db: Connection = Depends(get_db)):
     
     return [dict(row) for row in rows]  
 
+@app.put("/stops/{stop_id}")
+def update_stops(stop_id: int, stop: BusStops, db: Connection = Depends(get_db)):
+    cursor = db.cursor()
+    
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?",(stop_id,)).fetchone()
+    
+    if existing is None:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Stop not found")
+    
+    stop_name = stop.stop_name.strip().lower()
+    
+    try:
+        cursor.execute("UPDATE stops SET stop_name = ? WHERE stop_id = ?",(stop_name, stop_id))
+        db.commit()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Stop name already exists")
+    finally:
+        cursor.close()
+    
+    return {"message":"Bus Stop updated successfully"}
+
 @app.delete("/stops/{stop_id}")
 def delete_stops(stop_id: int, db: Connection = Depends(get_db)):       
     cursor = db.cursor()
