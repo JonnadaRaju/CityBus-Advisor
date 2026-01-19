@@ -24,3 +24,6 @@ class BusesWithTimings(BaseModel):
     start_bus: str
     end_bus: str
     trip_time: str
+
+class BusStops(BaseModel):
+    stop_name: str
