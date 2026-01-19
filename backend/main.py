@@ -4,8 +4,17 @@ from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, BusSt
 from sqlite3 import Connection
 from typing import List
 from datetime import datetime
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup():
@@ -150,6 +159,7 @@ def create_stops(stop: BusStops, db: Connection = Depends(get_db)):
         cursor.close()
     
     return {"message":"Bus Stop added successfully"}
+
 
 @app.get("/stops", response_model=List[BusStops])
 def get_stops(db: Connection = Depends(get_db)):
