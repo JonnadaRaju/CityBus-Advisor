@@ -3,7 +3,7 @@
 // ==========================================
 
 // API Configuration
-const API_BASE_URL = "https://api.citybusadvisor.12022001.xyz"; // Change this to your FastAPI backend URL
+const API_BASE_URL ="https://citybus-advisor.onrender.com"; // Change this to your FastAPI backend URL
 
 // State Management
 const state = {
