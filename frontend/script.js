@@ -1,61 +1,55 @@
 // ==========================================
-// CITY BUS ADVISOR - JAVASCRIPT
+// CITY BUS ADVISOR - JAVASCRIPT (FIXED)
 // ==========================================
 
-// API Configuration
-const API_BASE_URL ="https://citybus-advisor.onrender.com"; // Change this to your FastAPI backend URL
+// API Configuration - CHANGE THIS to your backend URL
+// For local development: "http://localhost:8000"
+// For production: "https://citybus-advisor.onrender.com"
+const API_BASE_URL = "https://citybus-advisor.onrender.com";
 
-// State Management
+// State Management (IN-MEMORY ONLY - no localStorage)
 const state = {
     buses: [],
     stops: [],
     timings: [],
     editingBusId: null,
     editingStopId: null,
-    isAdminLoggedIn: false
+    isAdminLoggedIn: false // Stored in memory only
 };
 
-// Admin credentials (In production, this should be handled by backend authentication)
+// Admin credentials
 const ADMIN_CREDENTIALS = {
     username: 'admin',
     password: 'admin123'
 };
 
 // ==========================================
-// ADMIN AUTHENTICATION
+// ADMIN AUTHENTICATION (FIXED - NO localStorage)
 // ==========================================
 
-// Check if admin is logged in (from localStorage)
 function checkAdminAuth() {
-    const isAdmin = localStorage.getItem('isAdminLoggedIn') === 'true';
-    state.isAdminLoggedIn = isAdmin;
+    // Admin status only persists during current session
     updateAdminUI();
-    return isAdmin;
+    return state.isAdminLoggedIn;
 }
 
-// Login admin
 function loginAdmin(username, password) {
     if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
         state.isAdminLoggedIn = true;
-        localStorage.setItem('isAdminLoggedIn', 'true');
         updateAdminUI();
         return true;
     }
     return false;
 }
 
-// Logout admin
 function logoutAdmin() {
     state.isAdminLoggedIn = false;
-    localStorage.removeItem('isAdminLoggedIn');
     updateAdminUI();
     
-    // Return to search section
     const searchSection = document.querySelector('[data-section="search"]');
     if (searchSection) searchSection.click();
 }
 
-// Update UI based on admin status
 function updateAdminUI() {
     const adminElements = document.querySelectorAll('.admin-only');
     const loginBtn = document.getElementById('admin-login-btn');
@@ -64,19 +58,13 @@ function updateAdminUI() {
     const mobileLogoutBtn = document.getElementById('mobile-admin-logout-btn');
     
     if (state.isAdminLoggedIn) {
-        // Show admin sections
         adminElements.forEach(el => el.style.display = '');
-        
-        // Update buttons
         if (loginBtn) loginBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = '';
         if (mobileLoginBtn) mobileLoginBtn.style.display = 'none';
         if (mobileLogoutBtn) mobileLogoutBtn.style.display = '';
     } else {
-        // Hide admin sections
         adminElements.forEach(el => el.style.display = 'none');
-        
-        // Update buttons
         if (loginBtn) loginBtn.style.display = '';
         if (logoutBtn) logoutBtn.style.display = 'none';
         if (mobileLoginBtn) mobileLoginBtn.style.display = '';
@@ -88,17 +76,14 @@ function updateAdminUI() {
 // UTILITY FUNCTIONS
 // ==========================================
 
-// Show toast notification
 function showToast(message, type = 'success') {
     const toast = document.getElementById('toast');
     const toastMessage = document.getElementById('toast-message');
     const toastIcon = toast.querySelector('.toast-icon');
     
-    // Set message
     toastMessage.textContent = message;
-    
-    // Set type
     toast.className = 'toast';
+    
     if (type === 'error') {
         toast.classList.add('error');
         toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
@@ -109,16 +94,10 @@ function showToast(message, type = 'success') {
         toastIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
     }
     
-    // Show toast
     toast.classList.remove('hidden');
-    
-    // Hide after 3 seconds
-    setTimeout(() => {
-        toast.classList.add('hidden');
-    }, 3000);
+    setTimeout(() => toast.classList.add('hidden'), 3000);
 }
 
-// Show/hide loading overlay
 function setLoading(isLoading) {
     const overlay = document.getElementById('loading-overlay');
     if (isLoading) {
@@ -128,7 +107,6 @@ function setLoading(isLoading) {
     }
 }
 
-// Format time for display
 function formatTime(time) {
     const [hours, minutes] = time.split(':');
     const hour = parseInt(hours);
@@ -137,7 +115,6 @@ function formatTime(time) {
     return `${displayHour}:${minutes} ${ampm}`;
 }
 
-// Capitalize first letter
 function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -146,7 +123,6 @@ function capitalize(str) {
 // API FUNCTIONS
 // ==========================================
 
-// Fetch all buses
 async function fetchBuses() {
     try {
         const response = await fetch(`${API_BASE_URL}/buses`);
@@ -160,7 +136,6 @@ async function fetchBuses() {
     }
 }
 
-// Add new bus
 async function addBus(busData) {
     try {
         const response = await fetch(`${API_BASE_URL}/buses`, {
@@ -176,7 +151,6 @@ async function addBus(busData) {
     }
 }
 
-// Update bus
 async function updateBus(busId, busData) {
     try {
         const response = await fetch(`${API_BASE_URL}/buses/${busId}`, {
@@ -192,7 +166,6 @@ async function updateBus(busId, busData) {
     }
 }
 
-// Delete bus
 async function deleteBus(busId) {
     try {
         const response = await fetch(`${API_BASE_URL}/buses/${busId}`, {
@@ -206,7 +179,6 @@ async function deleteBus(busId) {
     }
 }
 
-// Fetch all stops
 async function fetchStops() {
     try {
         const response = await fetch(`${API_BASE_URL}/stops`);
@@ -220,7 +192,6 @@ async function fetchStops() {
     }
 }
 
-// Add new stop
 async function addStop(stopData) {
     try {
         const response = await fetch(`${API_BASE_URL}/stops`, {
@@ -239,7 +210,6 @@ async function addStop(stopData) {
     }
 }
 
-// Update stop
 async function updateStop(stopId, stopData) {
     try {
         const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {
@@ -258,21 +228,24 @@ async function updateStop(stopId, stopData) {
     }
 }
 
-// Delete stop
 async function deleteStop(stopId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {S
+        const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {
             method: 'DELETE'
         });
-        if (!response.ok) throw new Error('Failed to delete stop');
-        return true;
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to delete stop');
+        }
+        
+        return await response.json();
     } catch (error) {
         console.error('Error deleting stop:', error);
         throw error;
     }
 }
 
-// Add bus timings
 async function addBusTimings(timingsData) {
     try {
         const response = await fetch(`${API_BASE_URL}/bus_timings`, {
@@ -288,7 +261,6 @@ async function addBusTimings(timingsData) {
     }
 }
 
-// Search buses
 async function searchBuses(source, destination, busNo = null, busType = null) {
     try {
         let url = `${API_BASE_URL}/routes/buses/timings?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}`;
@@ -297,9 +269,7 @@ async function searchBuses(source, destination, busNo = null, busType = null) {
         
         const response = await fetch(url);
         if (!response.ok) {
-            if (response.status === 404) {
-                return [];
-            }
+            if (response.status === 404) return [];
             throw new Error('Failed to search buses');
         }
         return await response.json();
@@ -313,10 +283,8 @@ async function searchBuses(source, destination, busNo = null, busType = null) {
 // UI RENDERING FUNCTIONS
 // ==========================================
 
-// Populate stop dropdowns
 async function populateStopDropdowns() {
     const stops = await fetchStops();
-    
     const dropdowns = [
         document.getElementById('source'),
         document.getElementById('destination')
@@ -337,7 +305,6 @@ async function populateStopDropdowns() {
     });
 }
 
-// Render buses list
 function renderBusesList(buses) {
     const container = document.getElementById('buses-list');
     
@@ -370,7 +337,6 @@ function renderBusesList(buses) {
     `).join('');
 }
 
-// Render stops list
 function renderStopsList(stops) {
     const container = document.getElementById('stops-list');
     
@@ -400,7 +366,6 @@ function renderStopsList(stops) {
     `).join('');
 }
 
-// Render search results
 function renderSearchResults(results) {
     const container = document.getElementById('results-container');
     const resultsSection = document.getElementById('search-results');
@@ -428,7 +393,6 @@ function renderSearchResults(results) {
     `).join('');
 }
 
-// Populate timing bus select
 async function populateTimingBusSelect() {
     const buses = await fetchBuses();
     const select = document.getElementById('timing-bus-select');
@@ -447,81 +411,52 @@ async function populateTimingBusSelect() {
 // EVENT HANDLERS
 // ==========================================
 
-// Modal handlers
 function setupModalHandlers() {
     const modal = document.getElementById('admin-modal');
     const loginBtn = document.getElementById('admin-login-btn');
     const mobileLoginBtn = document.getElementById('mobile-admin-login-btn');
     const closeBtn = document.getElementById('close-modal');
-    
-    // Safety check - if modal doesn't exist, exit
-    if (!modal || !loginBtn) {
-        console.error('Modal or login button not found');
-        return;
-    }
-    
     const overlay = modal.querySelector('.modal-overlay');
     const loginForm = document.getElementById('admin-login-form');
     
-    // Open modal
     const openModal = () => {
         modal.classList.remove('hidden');
-        const usernameInput = document.getElementById('admin-username');
-        if (usernameInput) usernameInput.focus();
+        document.getElementById('admin-username').focus();
     };
     
-    // Close modal
     const closeModal = () => {
         modal.classList.add('hidden');
-        if (loginForm) loginForm.reset();
+        loginForm.reset();
     };
     
-    // Add click listeners with safety checks
-    if (loginBtn) {
-        loginBtn.addEventListener('click', openModal);
-    }
+    loginBtn.addEventListener('click', openModal);
+    mobileLoginBtn.addEventListener('click', () => {
+        openModal();
+        document.getElementById('mobile-menu').classList.add('hidden');
+    });
+    closeBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
     
-    if (mobileLoginBtn) {
-        mobileLoginBtn.addEventListener('click', () => {
-            openModal();
-            const mobileMenu = document.getElementById('mobile-menu');
-            if (mobileMenu) mobileMenu.classList.add('hidden');
-        });
-    }
-    
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-    }
-    
-    if (overlay) {
-        overlay.addEventListener('click', closeModal);
-    }
-    
-    // Close on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
             closeModal();
         }
     });
     
-    // Handle login form
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('admin-username').value;
-            const password = document.getElementById('admin-password').value;
-            
-            if (loginAdmin(username, password)) {
-                showToast('Admin login successful!');
-                closeModal();
-            } else {
-                showToast('Invalid credentials. Try username: admin, password: admin123', 'error');
-            }
-        });
-    }
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const username = document.getElementById('admin-username').value;
+        const password = document.getElementById('admin-password').value;
+        
+        if (loginAdmin(username, password)) {
+            showToast('Admin login successful!');
+            closeModal();
+        } else {
+            showToast('Invalid credentials. Try username: admin, password: admin123', 'error');
+        }
+    });
 }
-// Logout handler
+
 function setupLogoutHandlers() {
     const logoutBtn = document.getElementById('admin-logout-btn');
     const mobileLogoutBtn = document.getElementById('mobile-admin-logout-btn');
@@ -538,7 +473,6 @@ function setupLogoutHandlers() {
     mobileLogoutBtn.addEventListener('click', handleLogout);
 }
 
-// Navigation
 function setupNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn, .mobile-nav-btn');
     const sections = document.querySelectorAll('.content-section');
@@ -547,21 +481,17 @@ function setupNavigation() {
         btn.addEventListener('click', () => {
             const targetSection = btn.getAttribute('data-section');
             
-            // Check if admin-only section and user is not admin
             if (btn.classList.contains('admin-only') && !state.isAdminLoggedIn) {
                 showToast('Please login as admin to access this section', 'warning');
                 return;
             }
             
-            // Update active states
             navButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             
-            // Find matching buttons in both desktop and mobile nav
             const matchingButtons = document.querySelectorAll(`[data-section="${targetSection}"]`);
             matchingButtons.forEach(b => b.classList.add('active'));
             
-            // Show target section
             sections.forEach(section => {
                 if (section.id === `${targetSection}-section`) {
                     section.classList.add('active');
@@ -570,29 +500,25 @@ function setupNavigation() {
                 }
             });
             
-            // Close mobile menu
             document.getElementById('mobile-menu').classList.add('hidden');
         });
     });
     
-    // Mobile menu toggle
     document.getElementById('mobile-menu-btn').addEventListener('click', () => {
         document.getElementById('mobile-menu').classList.toggle('hidden');
     });
 }
 
-// Bus form submission
 document.getElementById('bus-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const busData = {
-    bus_no: document.getElementById('bus-no').value.trim(),
-    bus_type: document.getElementById('bus-type').value,
-    start_bus: document.getElementById('start-bus').value.trim().toLowerCase(),
-    end_bus: document.getElementById('end-bus').value.trim().toLowerCase()
-};
+        bus_no: document.getElementById('bus-no').value.trim(),
+        bus_type: document.getElementById('bus-type').value,
+        start_bus: document.getElementById('start-bus').value.trim().toLowerCase(),
+        end_bus: document.getElementById('end-bus').value.trim().toLowerCase()
+    };
 
-    // Validate that start and end are different
     if (busData.start_bus === busData.end_bus) {
         showToast('Starting point and destination must be different', 'warning');
         return;
@@ -622,7 +548,6 @@ document.getElementById('bus-form').addEventListener('submit', async (e) => {
     }
 });
 
-// Edit bus
 window.editBus = async (busId) => {
     const bus = state.buses.find(b => b.bus_id === busId);
     if (!bus) return;
@@ -638,11 +563,9 @@ window.editBus = async (busId) => {
     document.getElementById('bus-submit-text').textContent = 'Update Bus';
     document.getElementById('cancel-edit-bus').classList.remove('hidden');
     
-    // Scroll to form
     document.getElementById('bus-form').scrollIntoView({ behavior: 'smooth' });
 };
 
-// Cancel bus edit
 function cancelBusEdit() {
     state.editingBusId = null;
     document.getElementById('bus-form').reset();
@@ -653,7 +576,6 @@ function cancelBusEdit() {
 
 document.getElementById('cancel-edit-bus').addEventListener('click', cancelBusEdit);
 
-// Delete bus
 window.confirmDeleteBus = async (busId) => {
     if (!confirm('Are you sure you want to delete this bus?')) return;
     
@@ -673,7 +595,6 @@ window.confirmDeleteBus = async (busId) => {
     }
 };
 
-// Stop form submission
 document.getElementById('stop-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -704,7 +625,6 @@ document.getElementById('stop-form').addEventListener('submit', async (e) => {
     }
 });
 
-// Edit stop
 window.editStop = async (stopId) => {
     const stop = state.stops.find(s => s.stop_id === stopId);
     if (!stop) return;
@@ -720,7 +640,6 @@ window.editStop = async (stopId) => {
     document.getElementById('stop-form').scrollIntoView({ behavior: 'smooth' });
 };
 
-// Cancel stop edit
 function cancelStopEdit() {
     state.editingStopId = null;
     document.getElementById('stop-form').reset();
@@ -731,26 +650,43 @@ function cancelStopEdit() {
 
 document.getElementById('cancel-edit-stop').addEventListener('click', cancelStopEdit);
 
-// Delete stop
 window.confirmDeleteStop = async (stopId) => {
     if (!confirm('Are you sure you want to delete this stop?')) return;
     
     setLoading(true);
     
     try {
-        await deleteStop(stopId);
+        const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {
+            method: 'DELETE'
+        });
+        
+        // Log the response for debugging
+        console.log('Delete response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Delete error:', errorData);
+            throw new Error(errorData.detail || 'Failed to delete stop');
+        }
+        
+        const result = await response.json();
+        console.log('Delete result:', result);
+        
         showToast('Stop deleted successfully');
+        
+        // Refresh the stops list
         const stops = await fetchStops();
         renderStopsList(stops);
         await populateStopDropdowns();
+        
     } catch (error) {
-        showToast('Failed to delete stop', 'error');
+        console.error('Error in confirmDeleteStop:', error);
+        showToast(error.message || 'Failed to delete stop', 'error');
     } finally {
         setLoading(false);
     }
 };
 
-// Search form submission
 document.getElementById('search-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -776,7 +712,6 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     }
 });
 
-// Add timing
 document.getElementById('add-timing-btn').addEventListener('click', async () => {
     const busId = document.getElementById('timing-bus-select').value;
     const tripTime = document.getElementById('trip-time').value;
@@ -799,7 +734,6 @@ document.getElementById('add-timing-btn').addEventListener('click', async () => 
     }
 });
 
-// Refresh buttons
 document.getElementById('refresh-buses').addEventListener('click', async () => {
     setLoading(true);
     const buses = await fetchBuses();
@@ -823,17 +757,11 @@ async function init() {
     setLoading(true);
     
     try {
-        // Check admin authentication
         checkAdminAuth();
-        
-        // Setup modal handlers
         setupModalHandlers();
         setupLogoutHandlers();
-        
-        // Setup navigation
         setupNavigation();
         
-        // Load initial data
         await populateStopDropdowns();
         const buses = await fetchBuses();
         renderBusesList(buses);
@@ -850,7 +778,6 @@ async function init() {
     }
 }
 
-// Start app when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {

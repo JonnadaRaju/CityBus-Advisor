@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from database import create_buses_table, get_db, create_bus_timings, create_stops_table
-from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, BusStops
+from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, CreateBusStop, BusStop
 from sqlite3 import Connection
 from typing import List
 from datetime import datetime
@@ -78,6 +78,7 @@ def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
 
     cursor.execute("DELETE FROM buses WHERE bus_id = ?",(bus_id,))    
     db.commit()
+    cursor.close()
     return {"message":"Bus deleted successfully"}  
 
 # POST route to add bus timings
@@ -145,36 +146,33 @@ def show_buses_with_timings(source: str, destination: str, bus_no: str | None = 
     return list(grouped.values())
 
 @app.post("/stops")
-def create_stops(stop: BusStops, db: Connection = Depends(get_db)):
+def create_stops(stop: CreateBusStop, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    
     stop_name = stop.stop_name.strip().lower()
     
     try:
-        cursor.execute("INSERT INTO stops(stop_name) VALUES(?)",(stop_name,))
+        cursor.execute("INSERT INTO stops(stop_name) VALUES(?)", (stop_name,))
         db.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Stop already exists")
     finally:
         cursor.close()
     
-    return {"message":"Bus Stop added successfully"}
+    return {"message": "Bus Stop added successfully"}
 
-
-@app.get("/stops", response_model=List[BusStops])
+@app.get("/stops", response_model=List[BusStop])
 def get_stops(db: Connection = Depends(get_db)):
     cursor = db.cursor()
     
-    rows = cursor.execute("SELECT * FROM stops").fetchall()
+    rows = cursor.execute("SELECT stop_id, stop_name FROM stops").fetchall()
     cursor.close()
     
     return [dict(row) for row in rows]  
 
 @app.put("/stops/{stop_id}")
-def update_stops(stop_id: int, stop: BusStops, db: Connection = Depends(get_db)):
+def update_stops(stop_id: int, stop: CreateBusStop, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    
-    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?",(stop_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?", (stop_id,)).fetchone()
     
     if existing is None:
         cursor.close()
@@ -183,25 +181,25 @@ def update_stops(stop_id: int, stop: BusStops, db: Connection = Depends(get_db))
     stop_name = stop.stop_name.strip().lower()
     
     try:
-        cursor.execute("UPDATE stops SET stop_name = ? WHERE stop_id = ?",(stop_name, stop_id))
+        cursor.execute("UPDATE stops SET stop_name = ? WHERE stop_id = ?", (stop_name, stop_id))
         db.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Stop name already exists")
     finally:
         cursor.close()
     
-    return {"message":"Bus Stop updated successfully"}
-
+    return {"message": "Bus Stop updated successfully"}
 @app.delete("/stops/{stop_id}")
 def delete_stops(stop_id: int, db: Connection = Depends(get_db)):       
     cursor = db.cursor()
-    
-    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?",(stop_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?", (stop_id,)).fetchone()
     
     if existing is None:
         cursor.close()
         raise HTTPException(status_code=404, detail="Stop not found")
 
-    cursor.execute("DELETE FROM stops WHERE stop_id = ?",(stop_id,))    
+    cursor.execute("DELETE FROM stops WHERE stop_id = ?", (stop_id,))    
     db.commit()
-    return {"message":"Bus Stop deleted successfully"}
+    cursor.close()
+    
+    return {"message": "Bus Stop deleted successfully"}
