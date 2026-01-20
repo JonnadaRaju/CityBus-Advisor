@@ -319,9 +319,7 @@ async function populateStopDropdowns() {
     
     const dropdowns = [
         document.getElementById('source'),
-        document.getElementById('destination'),
-        document.getElementById('start-bus'),
-        document.getElementById('end-bus')
+        document.getElementById('destination')
     ];
     
     dropdowns.forEach(dropdown => {
@@ -566,12 +564,18 @@ document.getElementById('bus-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const busData = {
-        bus_no: document.getElementById('bus-no').value,
-        bus_type: document.getElementById('bus-type').value,
-        start_bus: document.getElementById('start-bus').value,
-        end_bus: document.getElementById('end-bus').value
-    };
-    
+    bus_no: document.getElementById('bus-no').value.trim(),
+    bus_type: document.getElementById('bus-type').value,
+    start_bus: document.getElementById('start-bus').value.trim().toLowerCase(),
+    end_bus: document.getElementById('end-bus').value.trim().toLowerCase()
+};
+
+    // Validate that start and end are different
+    if (busData.start_bus === busData.end_bus) {
+        showToast('Starting point and destination must be different', 'warning');
+        return;
+    }
+
     setLoading(true);
     
     try {
@@ -588,6 +592,7 @@ document.getElementById('bus-form').addEventListener('submit', async (e) => {
         const buses = await fetchBuses();
         renderBusesList(buses);
         await populateTimingBusSelect();
+        await populateStopDropdowns();
     } catch (error) {
         showToast(error.message || 'Operation failed', 'error');
     } finally {
@@ -638,6 +643,7 @@ window.confirmDeleteBus = async (busId) => {
         const buses = await fetchBuses();
         renderBusesList(buses);
         await populateTimingBusSelect();
+        await populateStopDropdowns();
     } catch (error) {
         showToast('Failed to delete bus', 'error');
     } finally {
@@ -777,6 +783,7 @@ document.getElementById('refresh-buses').addEventListener('click', async () => {
     const buses = await fetchBuses();
     renderBusesList(buses);
     setLoading(false);
+    await populateStopDropdowns();
 });
 
 document.getElementById('refresh-stops').addEventListener('click', async () => {
