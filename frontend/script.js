@@ -453,28 +453,49 @@ function setupModalHandlers() {
     const loginBtn = document.getElementById('admin-login-btn');
     const mobileLoginBtn = document.getElementById('mobile-admin-login-btn');
     const closeBtn = document.getElementById('close-modal');
+    
+    // Safety check - if modal doesn't exist, exit
+    if (!modal || !loginBtn) {
+        console.error('Modal or login button not found');
+        return;
+    }
+    
     const overlay = modal.querySelector('.modal-overlay');
     const loginForm = document.getElementById('admin-login-form');
     
     // Open modal
     const openModal = () => {
         modal.classList.remove('hidden');
-        document.getElementById('admin-username').focus();
+        const usernameInput = document.getElementById('admin-username');
+        if (usernameInput) usernameInput.focus();
     };
     
     // Close modal
     const closeModal = () => {
         modal.classList.add('hidden');
-        loginForm.reset();
+        if (loginForm) loginForm.reset();
     };
     
-    loginBtn.addEventListener('click', openModal);
-    mobileLoginBtn.addEventListener('click', () => {
-        openModal();
-        document.getElementById('mobile-menu').classList.add('hidden');
-    });
-    closeBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', closeModal);
+    // Add click listeners with safety checks
+    if (loginBtn) {
+        loginBtn.addEventListener('click', openModal);
+    }
+    
+    if (mobileLoginBtn) {
+        mobileLoginBtn.addEventListener('click', () => {
+            openModal();
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) mobileMenu.classList.add('hidden');
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
+    }
+    
+    if (overlay) {
+        overlay.addEventListener('click', closeModal);
+    }
     
     // Close on Escape key
     document.addEventListener('keydown', (e) => {
@@ -484,21 +505,22 @@ function setupModalHandlers() {
     });
     
     // Handle login form
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        const username = document.getElementById('admin-username').value;
-        const password = document.getElementById('admin-password').value;
-        
-        if (loginAdmin(username, password)) {
-            showToast('Admin login successful!');
-            closeModal();
-        } else {
-            showToast('Invalid credentials. Try username: admin, password: admin123', 'error');
-        }
-    });
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('admin-username').value;
+            const password = document.getElementById('admin-password').value;
+            
+            if (loginAdmin(username, password)) {
+                showToast('Admin login successful!');
+                closeModal();
+            } else {
+                showToast('Invalid credentials. Try username: admin, password: admin123', 'error');
+            }
+        });
+    }
 }
-
 // Logout handler
 function setupLogoutHandlers() {
     const logoutBtn = document.getElementById('admin-logout-btn');
