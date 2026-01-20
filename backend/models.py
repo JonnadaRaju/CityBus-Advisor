@@ -25,5 +25,10 @@ class BusesWithTimings(BaseModel):
     end_bus: str
     trip_time: str
 
-class BusStops(BaseModel):
+# Separate models for request and response
+class CreateBusStop(BaseModel):
+    stop_name: str
+
+class BusStop(BaseModel):
+    stop_id: int
     stop_name: str
