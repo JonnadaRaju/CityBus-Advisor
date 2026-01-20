@@ -261,11 +261,11 @@ async function updateStop(stopId, stopData) {
 // Delete stop
 async function deleteStop(stopId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {
+        const response = await fetch(`${API_BASE_URL}/stops/${stopId}`, {S
             method: 'DELETE'
         });
         if (!response.ok) throw new Error('Failed to delete stop');
-        return await response.json();
+        return true;
     } catch (error) {
         console.error('Error deleting stop:', error);
         throw error;
