@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City Bus Advisor - Smart Transit Navigation</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Custom Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
-    
+
     <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
@@ -37,8 +40,9 @@
         }
     </script>
 </head>
+
 <body class="bg-light font-body">
-    
+
     <!-- Header -->
     <header class="header-gradient sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4">
@@ -49,72 +53,86 @@
                     </h1>
                     <p class="text-xs text-white/70 font-body">Smart Transit Navigation</p>
                 </div>
-                
+
                 <div class="hidden md:flex items-center gap-6">
                     <button class="nav-btn active" data-section="search">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Search Routes
                     </button>
                     <button class="nav-btn admin-only" data-section="buses" style="display: none;">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2">
+                            </path>
                         </svg>
                         Manage Buses
                     </button>
                     <button class="nav-btn admin-only" data-section="stops" style="display: none;">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Bus Stops
                     </button>
-                    
-                    <!-- Admin Login/Logout -->
-                    <button id="admin-login-btn" class="nav-btn">
+
+                    <!-- Admin Login/Logout - Hidden by default, accessed via Ctrl+Shift+A -->
+                    <button id="admin-login-btn" class="nav-btn" style="display: none;">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                            </path>
                         </svg>
                         Admin Login
                     </button>
                     <button id="admin-logout-btn" class="nav-btn admin-only" style="display: none;">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                            </path>
                         </svg>
                         Logout
                     </button>
                 </div>
-                
+
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden text-white" id="mobile-menu-btn">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
             </div>
-            
+
             <!-- Mobile Menu -->
             <div class="mobile-menu hidden md:hidden mt-4 pb-4 space-y-2" id="mobile-menu">
                 <button class="mobile-nav-btn active" data-section="search">Search Routes</button>
-                <button class="mobile-nav-btn admin-only" data-section="buses" style="display: none;">Manage Buses</button>
+                <button class="mobile-nav-btn admin-only" data-section="buses" style="display: none;">Manage
+                    Buses</button>
                 <button class="mobile-nav-btn admin-only" data-section="stops" style="display: none;">Bus Stops</button>
-                <button id="mobile-admin-login-btn" class="mobile-nav-btn">Admin Login</button>
-                <button id="mobile-admin-logout-btn" class="mobile-nav-btn admin-only" style="display: none;">Logout</button>
+                <!-- Mobile Admin buttons - Hidden by default, accessed via Ctrl+Shift+A -->
+                <button id="mobile-admin-login-btn" class="mobile-nav-btn" style="display: none;">Admin Login</button>
+                <button id="mobile-admin-logout-btn" class="mobile-nav-btn admin-only"
+                    style="display: none;">Logout</button>
             </div>
         </nav>
     </header>
 
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
-        
+
         <!-- Search Routes Section -->
         <section id="search-section" class="content-section active">
             <div class="section-header">
                 <h2 class="section-title">Find Your Bus</h2>
                 <p class="section-subtitle">Search for available bus routes and timings</p>
             </div>
-            
+
             <div class="card-gradient max-w-4xl mx-auto">
                 <form id="search-form" class="space-y-6">
                     <div class="grid md:grid-cols-2 gap-6">
@@ -124,7 +142,7 @@
                                 <option value="">Select starting point</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="destination" class="form-label">To</label>
                             <select id="destination" class="form-input" required>
@@ -132,13 +150,13 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="grid md:grid-cols-2 gap-6">
                         <div class="form-group">
                             <label for="bus-no-filter" class="form-label">Bus Number (Optional)</label>
                             <input type="text" id="bus-no-filter" class="form-input" placeholder="e.g., 45A">
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="bus-type-filter" class="form-label">Bus Type (Optional)</label>
                             <select id="bus-type-filter" class="form-input">
@@ -150,16 +168,17 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <button type="submit" class="btn-primary w-full">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
                         Search Buses
                     </button>
                 </form>
             </div>
-            
+
             <!-- Search Results -->
             <div id="search-results" class="mt-8 hidden">
                 <div class="flex items-center justify-between mb-6">
@@ -176,22 +195,22 @@
                 <h2 class="section-title">Manage Buses</h2>
                 <p class="section-subtitle">Add, update, and manage bus information</p>
             </div>
-            
+
             <div class="grid lg:grid-cols-2 gap-8">
                 <!-- Add/Edit Bus Form -->
                 <div class="card-gradient">
                     <h3 class="text-xl font-display font-bold text-dark mb-6">
                         <span id="bus-form-title">Add New Bus</span>
                     </h3>
-                    
+
                     <form id="bus-form" class="space-y-4">
                         <input type="hidden" id="edit-bus-id">
-                        
+
                         <div class="form-group">
                             <label for="bus-no" class="form-label">Bus Number</label>
                             <input type="text" id="bus-no" class="form-input" placeholder="e.g., 45A" required>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="bus-type" class="form-label">Bus Type</label>
                             <select id="bus-type" class="form-input" required>
@@ -202,23 +221,26 @@
                                 <option value="ac">AC</option>
                             </select>
                         </div>
-                        
+
                         <div class="form-group">
                             <label for="start-bus" class="form-label">Starting Point</label>
-                            <input type="text" id="start-bus" class="form-input" placeholder="e.g., Central Station" required>
+                            <input type="text" id="start-bus" class="form-input" placeholder="e.g., Central Station"
+                                required>
                             <p class="form-hint">Enter the starting point name</p>
                         </div>
 
                         <div class="form-group">
                             <label for="end-bus" class="form-label">Destination</label>
-                            <input type="text" id="end-bus" class="form-input" placeholder="e.g., Airport Terminal" required>
+                            <input type="text" id="end-bus" class="form-input" placeholder="e.g., Airport Terminal"
+                                required>
                             <p class="form-hint">Enter the destination name</p>
                         </div>
-                        
+
                         <div class="flex gap-3">
                             <button type="submit" class="btn-primary flex-1">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 <span id="bus-submit-text">Add Bus</span>
                             </button>
@@ -226,25 +248,27 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <!-- Bus List -->
                 <div class="card-gradient">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-display font-bold text-dark">All Buses</h3>
                         <button id="refresh-buses" class="text-secondary hover:text-primary transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
                             </svg>
                         </button>
                     </div>
                     <div id="buses-list" class="space-y-3 max-h-96 overflow-y-auto custom-scrollbar"></div>
                 </div>
             </div>
-            
+
             <!-- Bus Timings Section -->
             <div class="card-gradient mt-8">
                 <h3 class="text-xl font-display font-bold text-dark mb-6">Manage Bus Timings</h3>
-                
+
                 <div class="grid md:grid-cols-2 gap-6 mb-6">
                     <div class="form-group">
                         <label for="timing-bus-select" class="form-label">Select Bus</label>
@@ -252,20 +276,21 @@
                             <option value="">Choose a bus</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label for="trip-time" class="form-label">Trip Time</label>
                         <input type="time" id="trip-time" class="form-input">
                     </div>
                 </div>
-                
+
                 <button id="add-timing-btn" class="btn-primary mb-6">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
                     Add Timing
                 </button>
-                
+
                 <div id="timings-display" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </div>
         </section>
@@ -276,26 +301,28 @@
                 <h2 class="section-title">Bus Stops Management</h2>
                 <p class="section-subtitle">Add and manage bus stop locations</p>
             </div>
-            
+
             <div class="grid lg:grid-cols-2 gap-8">
                 <!-- Add/Edit Stop Form -->
                 <div class="card-gradient">
                     <h3 class="text-xl font-display font-bold text-dark mb-6">
                         <span id="stop-form-title">Add New Stop</span>
                     </h3>
-                    
+
                     <form id="stop-form" class="space-y-4">
                         <input type="hidden" id="edit-stop-id">
-                        
+
                         <div class="form-group">
                             <label for="stop-name" class="form-label">Stop Name</label>
-                            <input type="text" id="stop-name" class="form-input" placeholder="e.g., Central Station" required>
+                            <input type="text" id="stop-name" class="form-input" placeholder="e.g., Central Station"
+                                required>
                         </div>
-                        
+
                         <div class="flex gap-3">
                             <button type="submit" class="btn-primary flex-1">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 <span id="stop-submit-text">Add Stop</span>
                             </button>
@@ -303,14 +330,16 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <!-- Stops List -->
                 <div class="card-gradient">
                     <div class="flex items-center justify-between mb-6">
                         <h3 class="text-xl font-display font-bold text-dark">All Stops</h3>
                         <button id="refresh-stops" class="text-secondary hover:text-primary transition-colors">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
                             </svg>
                         </button>
                     </div>
@@ -329,22 +358,27 @@
                 <h3 class="modal-title">Admin Login</h3>
                 <button id="close-modal" class="modal-close">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </button>
             </div>
             <form id="admin-login-form" class="modal-body">
                 <div class="form-group">
                     <label for="admin-username" class="form-label">Username</label>
-                    <input type="text" id="admin-username" class="form-input" placeholder="Enter admin username" required autocomplete="username">
+                    <input type="text" id="admin-username" class="form-input" placeholder="Enter admin username"
+                        required autocomplete="username">
                 </div>
                 <div class="form-group">
                     <label for="admin-password" class="form-label">Password</label>
-                    <input type="password" id="admin-password" class="form-input" placeholder="Enter password" required autocomplete="current-password">
+                    <input type="password" id="admin-password" class="form-input" placeholder="Enter password" required
+                        autocomplete="current-password">
                 </div>
                 <button type="submit" class="btn-primary w-full">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1">
+                        </path>
                     </svg>
                     Login
                 </button>
@@ -370,4 +404,5 @@
     <!-- Script -->
     <script src="script.js"></script>
 </body>
+
 </html>
