@@ -215,6 +215,13 @@ body {
     color: #94a3b8;
 }
 
+.form-hint {
+    margin-top: 0.375rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
 /* === Buttons === */
 .btn-primary {
     display: inline-flex;
