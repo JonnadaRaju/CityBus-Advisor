@@ -19,8 +19,8 @@ const state = {
 
 // Admin credentials
 const ADMIN_CREDENTIALS = {
-    username: 'admin',
-    password: 'admin123'
+    username: 'raju',
+    password: 'Raju@2001'
 };
 
 // ==========================================
@@ -57,21 +57,29 @@ function updateAdminUI() {
     const mobileLoginBtn = document.getElementById('mobile-admin-login-btn');
     const mobileLogoutBtn = document.getElementById('mobile-admin-logout-btn');
     
+function updateAdminUI() {
+    const adminElements = document.querySelectorAll('.admin-only');
+    const loginBtn = document.getElementById('admin-login-btn');
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    const mobileLoginBtn = document.getElementById('mobile-admin-login-btn');
+    const mobileLogoutBtn = document.getElementById('mobile-admin-logout-btn');
+    
     if (state.isAdminLoggedIn) {
+        // User is logged in - show admin sections and logout button
         adminElements.forEach(el => el.style.display = '');
         if (loginBtn) loginBtn.style.display = 'none';
         if (logoutBtn) logoutBtn.style.display = '';
         if (mobileLoginBtn) mobileLoginBtn.style.display = 'none';
         if (mobileLogoutBtn) mobileLogoutBtn.style.display = '';
     } else {
+        // User is NOT logged in - hide everything admin-related
         adminElements.forEach(el => el.style.display = 'none');
-        if (loginBtn) loginBtn.style.display = '';
+        if (loginBtn) loginBtn.style.display = 'none';  // ← CHANGED: Keep hidden
         if (logoutBtn) logoutBtn.style.display = 'none';
-        if (mobileLoginBtn) mobileLoginBtn.style.display = '';
+        if (mobileLoginBtn) mobileLoginBtn.style.display = 'none';  // ← CHANGED: Keep hidden
         if (mobileLogoutBtn) mobileLogoutBtn.style.display = 'none';
     }
 }
-
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
@@ -440,6 +448,16 @@ function setupModalHandlers() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
             closeModal();
+        }
+    });
+    
+    // Secret admin shortcut: Ctrl+Shift+A
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+            e.preventDefault();
+            if (!state.isAdminLoggedIn) {
+                openModal();
+            }
         }
     });
     
