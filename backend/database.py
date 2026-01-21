@@ -1,39 +1,77 @@
-import sqlite3
+import os
 
-DB_NAME = "citybus_advisor.db"
+DATABASE_URL = os.getenv("postgresql://user:password@localhost:5432/citybusadvisor")
 
-def get_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
-    return conn
+if DATABASE_URL:
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    
+    def get_connection():
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        return conn
 
-def create_buses_table():
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("CREATE TABLE IF NOT EXISTS buses(bus_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_no TEXT NOT NULL, bus_type TEXT NOT NULL, start_bus TEXT NOT NULL, end_bus TEXT NOT NULL)")
+    def create_buses_table():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS buses(bus_id SERIAL PRIMARY KEY, bus_no TEXT NOT NULL, bus_type TEXT NOT NULL, start_bus TEXT NOT NULL, end_bus TEXT NOT NULL)")
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
+        
+    def create_bus_timings():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS bus_timings(timing_id SERIAL PRIMARY KEY, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id) ON DELETE CASCADE)")    
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+    def create_stops_table():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id SERIAL PRIMARY KEY, stop_name TEXT UNIQUE NOT NULL)")
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+else:
+    import sqlite3
     
-def create_bus_timings():
-    conn = get_connection()
-    cursor = conn.cursor()
+    DB_NAME = "citybus_advisor.db"
     
-    cursor.execute("CREATE TABLE IF NOT EXISTS bus_timings(timing_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id))")    
+    def get_connection():
+        conn = sqlite3.connect(DB_NAME)
+        conn.row_factory = sqlite3.Row
+        return conn
     
-    conn.commit()
-    conn.close()
-    
-def create_stops_table():
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id INTEGER PRIMARY KEY AUTOINCREMENT, stop_name TEXT UNIQUE NOT NULL)")
-    
-    conn.commit()
-    conn.close()
-    
+    def create_buses_table():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS buses(bus_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_no TEXT NOT NULL, bus_type TEXT NOT NULL, start_bus TEXT NOT NULL, end_bus TEXT NOT NULL)")
+        conn.commit()
+        conn.close()
+        
+    def create_bus_timings():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS bus_timings(timing_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id))")    
+        conn.commit()
+        conn.close()
+        
+    def create_stops_table():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id INTEGER PRIMARY KEY AUTOINCREMENT, stop_name TEXT UNIQUE NOT NULL)")
+        conn.commit()
+        conn.close()
+           
 def get_db():
     conn = get_connection()
     try:
