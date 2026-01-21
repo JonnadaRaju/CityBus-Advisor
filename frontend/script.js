@@ -5,7 +5,7 @@
 // API Configuration - CHANGE THIS to your backend URL
 // For local development: "http://localhost:8000"
 // For production: "https://citybus-advisor.onrender.com"
-const API_BASE_URL = "https://citybus-advisor.onrender.com";
+const API_BASE_URL = "https://api.citybusadvisor.12022001.xyz";
 
 // State Management (IN-MEMORY ONLY - no localStorage)
 const state = {
