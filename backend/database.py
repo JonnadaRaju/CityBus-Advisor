@@ -3,11 +3,11 @@ import os
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
+    import psycopg
+    from psycopg.rows import dict_row
     
     def get_connection():
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor, sslmode="require")
+        conn = psycopg.connect(DATABASE_URL, row_factory=dict_row)
         return conn
 
     def create_buses_table():
