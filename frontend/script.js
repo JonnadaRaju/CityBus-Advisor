@@ -50,12 +50,6 @@ function logoutAdmin() {
     if (searchSection) searchSection.click();
 }
 
-function updateAdminUI() {
-    const adminElements = document.querySelectorAll('.admin-only');
-    const loginBtn = document.getElementById('admin-login-btn');
-    const logoutBtn = document.getElementById('admin-logout-btn');
-    const mobileLoginBtn = document.getElementById('mobile-admin-login-btn');
-    const mobileLogoutBtn = document.getElementById('mobile-admin-logout-btn');
     
 function updateAdminUI() {
     const adminElements = document.querySelectorAll('.admin-only');
@@ -80,6 +74,8 @@ function updateAdminUI() {
         if (mobileLogoutBtn) mobileLogoutBtn.style.display = 'none';
     }
 }
+
+
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
@@ -437,30 +433,41 @@ function setupModalHandlers() {
         loginForm.reset();
     };
     
-    loginBtn.addEventListener('click', openModal);
-    mobileLoginBtn.addEventListener('click', () => {
-        openModal();
-        document.getElementById('mobile-menu').classList.add('hidden');
-    });
+    // Only add click listeners if buttons exist and are visible
+    if (loginBtn) {
+        loginBtn.addEventListener('click', openModal);
+    }
+    if (mobileLoginBtn) {
+        mobileLoginBtn.addEventListener('click', () => {
+            openModal();
+            document.getElementById('mobile-menu').classList.add('hidden');
+        });
+    }
+    
     closeBtn.addEventListener('click', closeModal);
     overlay.addEventListener('click', closeModal);
     
+    // Close modal on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
             closeModal();
         }
     });
     
-    // Secret admin shortcut: Ctrl+Shift+A
+    // SECRET ADMIN SHORTCUT - Multiple options to ensure it works
     document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+        // Option 1: Ctrl+Shift+A (uppercase A)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.code === 'KeyA')) {
             e.preventDefault();
+            console.log('Admin shortcut detected!'); // Debug message
             if (!state.isAdminLoggedIn) {
                 openModal();
+                showToast('Admin login opened', 'success');
             }
         }
     });
     
+    // Handle login form submission
     loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
         const username = document.getElementById('admin-username').value;
@@ -474,6 +481,34 @@ function setupModalHandlers() {
         }
     });
 }
+
+// ALTERNATIVE: Triple-press 'A' key to open admin
+let aPressCount = 0;
+let aPressTimer = null;
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'a' || e.key === 'A') {
+        aPressCount++;
+        console.log('A pressed:', aPressCount, 'times');
+        
+        if (aPressCount === 3) {
+            console.log('Triple A detected - opening admin!');
+            if (!state.isAdminLoggedIn) {
+                const modal = document.getElementById('admin-modal');
+                modal.classList.remove('hidden');
+                document.getElementById('admin-username').focus();
+                showToast('Admin login opened', 'success');
+            }
+            aPressCount = 0;
+        }
+        
+        clearTimeout(aPressTimer);
+        aPressTimer = setTimeout(() => {
+            aPressCount = 0;
+        }, 1000);
+    }
+});
+
 
 function setupLogoutHandlers() {
     const logoutBtn = document.getElementById('admin-logout-btn');
