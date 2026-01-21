@@ -1,13 +1,13 @@
 import os
 
-DATABASE_URL = os.getenv("postgresql://user:password@localhost:5432/citybusadvisor")
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
     import psycopg2
     from psycopg2.extras import RealDictCursor
     
     def get_connection():
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
+        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor, sslmode="require")
         return conn
 
     def create_buses_table():
