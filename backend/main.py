@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from database import create_buses_table, get_db, create_bus_timings, create_stops_table
 from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, CreateBusStop, BusStop
-from sqlite3 import Connection
-from typing import List
+from typing import List, Any
+Connection = Any
 from datetime import datetime
 from fastapi.middleware.cors import CORSMiddleware
+import os
+
 
 app = FastAPI()
 
@@ -32,8 +34,11 @@ def read_root():
 @app.post("/buses")
 def add_buses(bus: CreateBuses, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    cursor.execute("INSERT INTO buses (bus_no, bus_type, start_bus, end_bus) VALUES (?, ?, ?, ?)",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus))
-    db.commit()
+    try:    
+        cursor.execute("INSERT INTO buses (bus_no, bus_type, start_bus, end_bus) VALUES (%s, %s, %s, %s)",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus))
+        db.commit()
+    finally:
+        cursor.close()
     return {"message": "Bus added successfully"}
 
 # GET route to fetch all buses
@@ -52,13 +57,13 @@ def get_all_buses(db: Connection = Depends(get_db)):
 def update_bus(bus_id: int, bus: CreateBuses, db: Connection = Depends(get_db)):
     cursor = db.cursor()
     
-    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = ?",(bus_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = %s",(bus_id,)).fetchone()
     
     if existing is None:
         cursor.close()
         raise HTTPException(status_code=404, detail="Bus not found")
     
-    cursor.execute("UPDATE buses SET bus_no = ?, bus_type = ?, start_bus = ?, end_bus = ? WHERE bus_id = ?",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus, bus_id))
+    cursor.execute("UPDATE buses SET bus_no = %s, bus_type = %s, start_bus = %s, end_bus = %s WHERE bus_id = %s",(bus.bus_no, bus.bus_type, bus.start_bus, bus.end_bus, bus_id))
     
     db.commit()
     cursor.close()
@@ -70,13 +75,13 @@ def update_bus(bus_id: int, bus: CreateBuses, db: Connection = Depends(get_db)):
 def delete_buses(bus_id: int, db: Connection = Depends(get_db)):
     cursor = db.cursor()
     
-    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = ?",(bus_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM buses WHERE bus_id = %s",(bus_id,)).fetchone()
     
     if existing is None:
         cursor.close()
         raise HTTPException(status_code=404, detail="Bus not found")
 
-    cursor.execute("DELETE FROM buses WHERE bus_id = ?",(bus_id,))    
+    cursor.execute("DELETE FROM buses WHERE bus_id = %s",(bus_id,))    
     db.commit()
     cursor.close()
     return {"message":"Bus deleted successfully"}  
@@ -88,7 +93,7 @@ def bus_timings(time: List[CreateBusTimings], db: Connection = Depends(get_db)):
     cursor = db.cursor()
     
     multiple_data_insertion = [(t.bus_id, t.trip_time) for t in time]
-    cursor.executemany("INSERT INTO bus_timings(bus_id, trip_time) VALUES(?, ?)",multiple_data_insertion)    
+    cursor.executemany("INSERT INTO bus_timings(bus_id, trip_time) VALUES(%s, %s)",multiple_data_insertion)    
     db.commit()
     cursor.close()
     return {"message":"Timings added successfully"}
@@ -98,7 +103,7 @@ def bus_timings(time: List[CreateBusTimings], db: Connection = Depends(get_db)):
 @app.get("/bus_timings/{bus_id}", response_model=List[BusesWithTimings])
 def bus_timings_by_id(bus_id: int, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    rows = cursor.execute("SELECT b.bus_id, b.bus_no, b.bus_type, b.start_bus, b.end_bus, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE b.bus_id = ? ORDER BY t.trip_time",(bus_id,)).fetchall()
+    rows = cursor.execute("SELECT b.bus_id, b.bus_no, b.bus_type, b.start_bus, b.end_bus, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE b.bus_id = %s ORDER BY t.trip_time",(bus_id,)).fetchall()
     cursor.close()
     if not rows:
         raise HTTPException(status_code=404, detail="Bus not found")
@@ -111,15 +116,15 @@ def show_buses_with_timings(source: str, destination: str, bus_no: str | None = 
 
     current_time = datetime.now().strftime("%H:%M")
 
-    query = "SELECT b.bus_no, b.bus_type, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE LOWER(b.start_bus) = ? AND LOWER(b.end_bus) = ? AND t.trip_time > ?"
+    query = "SELECT b.bus_no, b.bus_type, t.trip_time FROM buses b JOIN bus_timings t ON b.bus_id = t.bus_id WHERE LOWER(b.start_bus) = %s AND LOWER(b.end_bus) = %s AND t.trip_time > %s"
     params = [source.lower(), destination.lower(), current_time]
     
     if bus_no:
-        query += " AND LOWER(b.bus_no) = ?"
+        query += " AND LOWER(b.bus_no) = %s"
         params.append(bus_no.lower())
         
     if bus_type:
-        query += " AND LOWER(b.bus_type) = ?"
+        query += " AND LOWER(b.bus_type) = %s"
         params.append(bus_type.lower())
         
     query += " ORDER BY t.trip_time"
@@ -151,7 +156,7 @@ def create_stops(stop: CreateBusStop, db: Connection = Depends(get_db)):
     stop_name = stop.stop_name.strip().lower()
     
     try:
-        cursor.execute("INSERT INTO stops(stop_name) VALUES(?)", (stop_name,))
+        cursor.execute("INSERT INTO stops(stop_name) VALUES(%s)", (stop_name,))
         db.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Stop already exists")
@@ -172,7 +177,7 @@ def get_stops(db: Connection = Depends(get_db)):
 @app.put("/stops/{stop_id}")
 def update_stops(stop_id: int, stop: CreateBusStop, db: Connection = Depends(get_db)):
     cursor = db.cursor()
-    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?", (stop_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = %s", (stop_id,)).fetchone()
     
     if existing is None:
         cursor.close()
@@ -181,7 +186,7 @@ def update_stops(stop_id: int, stop: CreateBusStop, db: Connection = Depends(get
     stop_name = stop.stop_name.strip().lower()
     
     try:
-        cursor.execute("UPDATE stops SET stop_name = ? WHERE stop_id = ?", (stop_name, stop_id))
+        cursor.execute("UPDATE stops SET stop_name = %s WHERE stop_id = %s", (stop_name, stop_id))
         db.commit()
     except Exception:
         raise HTTPException(status_code=400, detail="Stop name already exists")
@@ -192,13 +197,13 @@ def update_stops(stop_id: int, stop: CreateBusStop, db: Connection = Depends(get
 @app.delete("/stops/{stop_id}")
 def delete_stops(stop_id: int, db: Connection = Depends(get_db)):       
     cursor = db.cursor()
-    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = ?", (stop_id,)).fetchone()
+    existing = cursor.execute("SELECT 1 FROM stops WHERE stop_id = %s", (stop_id,)).fetchone()
     
     if existing is None:
         cursor.close()
         raise HTTPException(status_code=404, detail="Stop not found")
 
-    cursor.execute("DELETE FROM stops WHERE stop_id = ?", (stop_id,))    
+    cursor.execute("DELETE FROM stops WHERE stop_id = %s", (stop_id,))    
     db.commit()
     cursor.close()
     
