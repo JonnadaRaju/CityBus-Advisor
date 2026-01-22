@@ -32,3 +32,16 @@ class CreateBusStop(BaseModel):
 class BusStop(BaseModel):
     stop_id: int
     stop_name: str
+    
+class CreatePlaceDeparture(BaseModel):
+    place_name: str
+    bus_no: str
+    bus_type: str
+    departure_time: str
+
+class PlaceDeparture(BaseModel):
+    departure_id: int
+    place_name: str
+    bus_no: str
+    bus_type: str
+    departure_time: str
