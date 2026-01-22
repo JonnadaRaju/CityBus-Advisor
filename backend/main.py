@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
-from database import create_buses_table, get_db, create_bus_timings, create_stops_table
-from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, CreateBusStop, BusStop
+from database import create_buses_table, get_db, create_bus_timings, create_stops_table, create_place_departures_table
+from models import CreateBuses, Buses, CreateBusTimings, BusesWithTimings, CreateBusStop, BusStop, CreatePlaceDeparture, PlaceDeparture
 from typing import List, Any
 Connection = Any
 from datetime import datetime
@@ -23,7 +23,8 @@ def startup():
     create_buses_table() 
     create_bus_timings()
     create_stops_table()
-    
+    create_place_departures_table()
+        
 # Basic route to check if the API is running
 
 @app.get("/")
@@ -208,3 +209,203 @@ def delete_stops(stop_id: int, db: Connection = Depends(get_db)):
     cursor.close()
     
     return {"message": "Bus Stop deleted successfully"}
+
+@app.post("/place_departures")
+def add_place_departure(departure: CreatePlaceDeparture, db: Connection = Depends(get_db)):
+    """Add a single departure for a place"""
+    cursor = db.cursor()
+    
+    try:
+        cursor.execute("""
+            INSERT INTO place_departures 
+            (place_name, bus_no, bus_type, departure_time) 
+            VALUES (%s, %s, %s, %s)
+        """, (
+            departure.place_name.strip().lower(),
+            departure.bus_no.strip(),
+            departure.bus_type.strip().lower(),
+            departure.departure_time
+        ))
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to add departure: {str(e)}")
+    finally:
+        cursor.close()
+    
+    return {"message": "Departure added successfully"}
+
+
+@app.get("/place_departures/{place_name}")
+def get_departures_by_place(place_name: str, db: Connection = Depends(get_db)):
+    """
+    Get all departures from a specific place
+    Returns buses grouped by bus_no with all their timings
+    """
+    cursor = db.cursor()
+    
+    rows = cursor.execute("""
+        SELECT bus_no, bus_type, departure_time
+        FROM place_departures
+        WHERE LOWER(place_name) = %s
+        ORDER BY bus_no, departure_time
+    """, (place_name.lower(),)).fetchall()
+    
+    cursor.close()
+    
+    if not rows:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No departures found from '{place_name}'"
+        )
+    
+    # Group by bus number
+    buses_dict = {}
+    
+    for row in rows:
+        bus_no = row["bus_no"]
+        
+        if bus_no not in buses_dict:
+            buses_dict[bus_no] = {
+                "bus_type": row["bus_type"],
+                "timings": []
+            }
+        
+        buses_dict[bus_no]["timings"].append(row["departure_time"])
+    
+    return {
+        "place": place_name,
+        "buses": buses_dict
+    }
+
+
+@app.get("/place_departures", response_model=List[PlaceDeparture])
+def get_all_place_departures(db: Connection = Depends(get_db)):
+    """Get all place departures"""
+    cursor = db.cursor()
+    rows = cursor.execute("SELECT * FROM place_departures ORDER BY place_name, departure_time").fetchall()
+    cursor.close()
+    return [dict(row) for row in rows]
+
+
+@app.put("/place_departures/{departure_id}")
+def update_place_departure(departure_id: int, departure: CreatePlaceDeparture, db: Connection = Depends(get_db)):
+    """Update a specific departure"""
+    cursor = db.cursor()
+    
+    existing = cursor.execute("SELECT 1 FROM place_departures WHERE departure_id = %s", (departure_id,)).fetchone()
+    if not existing:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Departure not found")
+        
+    try:
+        cursor.execute("""
+            UPDATE place_departures 
+            SET place_name = %s, bus_no = %s, bus_type = %s, departure_time = %s
+            WHERE departure_id = %s
+        """, (
+            departure.place_name.strip().lower(),
+            departure.bus_no.strip(),
+            departure.bus_type.strip().lower(),
+            departure.departure_time,
+            departure_id
+        ))
+        db.commit()
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to update departure: {str(e)}")
+    finally:
+        cursor.close()
+    
+    return {"message": "Departure updated successfully"}
+
+
+@app.get("/places/list")
+def get_all_places(db: Connection = Depends(get_db)):
+    """Get list of all unique places that have departures"""
+    cursor = db.cursor()
+    
+    rows = cursor.execute("""
+        SELECT DISTINCT place_name 
+        FROM place_departures 
+        ORDER BY place_name
+    """).fetchall()
+    
+    cursor.close()
+    
+    return [row["place_name"] for row in rows]
+
+
+@app.delete("/place_departures/{departure_id}")
+def delete_place_departure(departure_id: int, db: Connection = Depends(get_db)):
+    """Delete a specific departure"""
+    cursor = db.cursor()
+    
+    existing = cursor.execute(
+        "SELECT 1 FROM place_departures WHERE departure_id = %s", 
+        (departure_id,)
+    ).fetchone()
+    
+    if not existing:
+        cursor.close()
+        raise HTTPException(status_code=404, detail="Departure not found")
+    
+    cursor.execute("DELETE FROM place_departures WHERE departure_id = %s", (departure_id,))
+    db.commit()
+    cursor.close()
+    
+    return {"message": "Departure deleted successfully"}
+
+
+# ==========================================
+# UTILITY ENDPOINT: Sync from existing buses
+# ==========================================
+
+@app.post("/place_departures/sync")
+def sync_place_departures_from_buses(db: Connection = Depends(get_db)):
+    """
+    Auto-populate place_departures table from existing buses and timings
+    This helps migrate your existing data
+    """
+    cursor = db.cursor()
+    
+    # First, clear existing place_departures
+    cursor.execute("DELETE FROM place_departures")
+    
+    # Get all buses with their timings
+    rows = cursor.execute("""
+        SELECT 
+            b.start_bus as place_name,
+            b.bus_no,
+            b.bus_type,
+            t.trip_time as departure_time
+        FROM buses b
+        LEFT JOIN bus_timings t ON b.bus_id = t.bus_id
+        WHERE t.trip_time IS NOT NULL
+        ORDER BY b.start_bus, b.bus_no, t.trip_time
+    """).fetchall()
+    
+    if not rows:
+        cursor.close()
+        return {"message": "No data to sync"}
+    
+    # Insert into place_departures
+    data = [
+        (row["place_name"].lower(), row["bus_no"], 
+         row["bus_type"].lower(), 
+         row["departure_time"])
+        for row in rows
+    ]
+    
+    cursor.executemany("""
+        INSERT INTO place_departures 
+        (place_name, bus_no, bus_type, departure_time) 
+        VALUES (%s, %s, %s, %s)
+    """, data)
+    
+    db.commit()
+    synced_count = len(data)
+    cursor.close()
+    
+    return {
+        "message": f"Successfully synced {synced_count} departures",
+        "count": synced_count
+    }
