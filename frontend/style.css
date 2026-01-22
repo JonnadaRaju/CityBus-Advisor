@@ -1,5 +1,5 @@
 /* ==========================================
-   CITY BUS ADVISOR - CUSTOM STYLES
+   CITY BUS ADVISOR - CUSTOM STYLES (UPDATED)
    ========================================== */
 
 /* === CSS Variables === */
@@ -109,6 +109,81 @@ body {
 .mobile-nav-btn.active {
     color: white;
     background: rgba(255, 107, 53, 0.2);
+}
+
+/* === NEW: Section Card Styles === */
+.section-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+    border: 2px solid transparent;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.section-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(0, 78, 137, 0.2);
+    border-color: var(--accent);
+}
+
+.section-card:hover::before {
+    transform: scaleX(1);
+}
+
+.section-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(26, 167, 236, 0.1) 100%);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+
+.section-card:hover .section-icon {
+    transform: scale(1.1) rotate(5deg);
+    background: linear-gradient(135deg, rgba(255, 107, 53, 0.2) 0%, rgba(26, 167, 236, 0.2) 100%);
+}
+
+/* === NEW: Back Button === */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    color: var(--secondary);
+    background: white;
+    border: 2px solid var(--secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 2rem;
+}
+
+.back-button:hover {
+    background: var(--secondary);
+    color: white;
+    transform: translateX(-4px);
 }
 
 /* === Section Styles === */
@@ -412,6 +487,26 @@ body {
     background: var(--secondary);
     color: white;
     transform: scale(1.05);
+}
+
+/* Highlighted timing badges (first 2 upcoming) */
+.timing-highlighted {
+    background: linear-gradient(135deg, var(--primary) 0%, #FF8C61 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.5);
+    }
 }
 
 /* === List Item === */
@@ -775,3 +870,9 @@ body {
     height: 14px;
 }
 
+/* Past timings styling */
+.timing-past {
+    background: rgba(0, 0, 0, 0.05) !important;
+    color: #9ca3af !important;
+    opacity: 0.6;
+}

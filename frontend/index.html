@@ -47,7 +47,7 @@
     <header class="header-gradient sticky top-0 z-50">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <div class="logo-container">
+                <div class="logo-container cursor-pointer" onclick="showSection('home')">
                     <h1 class="text-3xl font-display font-bold text-white tracking-tight">
                         <span class="text-primary">City</span>Bus
                     </h1>
@@ -55,12 +55,13 @@
                 </div>
 
                 <div class="hidden md:flex items-center gap-6">
-                    <button class="nav-btn active" data-section="search">
+                    <button class="nav-btn active" data-section="home">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                            </path>
                         </svg>
-                        Search Routes
+                        Home
                     </button>
                     <button class="nav-btn admin-only" data-section="buses" style="display: none;">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,6 +80,13 @@
                                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                         </svg>
                         Bus Stops
+                    </button>
+                    <button class="nav-btn admin-only" data-section="place-departures" style="display: none;">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Place Departures
                     </button>
 
                     <!-- Admin Login/Logout - Hidden by default, accessed via Ctrl+Shift+A -->
@@ -111,10 +119,12 @@
 
             <!-- Mobile Menu -->
             <div class="mobile-menu hidden md:hidden mt-4 pb-4 space-y-2" id="mobile-menu">
-                <button class="mobile-nav-btn active" data-section="search">Search Routes</button>
+                <button class="mobile-nav-btn active" data-section="home">Home</button>
                 <button class="mobile-nav-btn admin-only" data-section="buses" style="display: none;">Manage
                     Buses</button>
                 <button class="mobile-nav-btn admin-only" data-section="stops" style="display: none;">Bus Stops</button>
+                <button class="mobile-nav-btn admin-only" data-section="place-departures" style="display: none;">Place
+                    Departures</button>
                 <!-- Mobile Admin buttons - Hidden by default, accessed via Ctrl+Shift+A -->
                 <button id="mobile-admin-login-btn" class="mobile-nav-btn" style="display: none;">Admin Login</button>
                 <button id="mobile-admin-logout-btn" class="mobile-nav-btn admin-only"
@@ -126,11 +136,76 @@
     <!-- Main Content -->
     <main class="container mx-auto px-6 py-8">
 
-        <!-- Search Routes Section -->
-        <section id="search-section" class="content-section active">
+        <!-- HOME SECTION - NEW: Section Cards -->
+        <section id="home-section" class="content-section active">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl md:text-5xl font-display font-bold text-dark mb-3">Welcome to CityBus</h2>
+                <p class="text-lg text-gray-600 font-body">Choose how you'd like to search for buses</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+                <!-- Route Based Search Card -->
+                <div class="section-card" onclick="showSection('route-search')">
+                    <div class="section-icon">
+                        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-dark text-center mb-3">Route Based Search</h3>
+                    <p class="text-center text-gray-600 font-body mb-4">Find buses traveling from one location to
+                        another</p>
+                    <div class="flex items-center justify-center gap-2 text-sm text-secondary font-semibold">
+                        <span>Source</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
+                        <span>Destination</span>
+                    </div>
+                </div>
+
+                <!-- Place Based Search Card -->
+                <div class="section-card" onclick="showSection('place-search')">
+                    <div class="section-icon">
+                        <svg class="w-8 h-8 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-display font-bold text-dark text-center mb-3">Place Based Search</h3>
+                    <p class="text-center text-gray-600 font-body mb-4">View all buses departing from a specific
+                        location</p>
+                    <div class="flex items-center justify-center gap-2 text-sm text-accent font-semibold">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span>Departure Board</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ROUTE SEARCH SECTION - Renamed from "search-section" -->
+        <section id="route-search-section" class="content-section">
+            <button class="back-button" onclick="showSection('home')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Home
+            </button>
+
             <div class="section-header">
-                <h2 class="section-title">Find Your Bus</h2>
-                <p class="section-subtitle">Search for available bus routes and timings</p>
+                <h2 class="section-title">Route Based Search</h2>
+                <p class="section-subtitle">Find buses between two locations</p>
             </div>
 
             <div class="card-gradient max-w-4xl mx-auto">
@@ -189,7 +264,51 @@
             </div>
         </section>
 
-        <!-- Manage Buses Section -->
+        <!-- PLACE SEARCH SECTION - NEW -->
+        <section id="place-search-section" class="content-section">
+            <button class="back-button" onclick="showSection('home')">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Home
+            </button>
+
+            <div class="section-header">
+                <h2 class="section-title">Place Based Search</h2>
+                <p class="section-subtitle">View all buses departing from a location</p>
+            </div>
+
+            <div class="card-gradient max-w-4xl mx-auto">
+                <form id="place-form" class="space-y-6">
+                    <div class="form-group">
+                        <label for="place-select" class="form-label">Select Location</label>
+                        <select id="place-select" class="form-input" required>
+                            <option value="">Choose a bus stop</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Show All Departures
+                    </button>
+                </form>
+            </div>
+
+            <!-- Place Search Results -->
+            <div id="place-results" class="mt-8 hidden">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-display font-bold text-dark" id="place-results-title">Departures</h3>
+                    <span class="badge-secondary" id="place-results-count">0 buses</span>
+                </div>
+                <div id="place-results-container" class="grid gap-4"></div>
+            </div>
+        </section>
+
+        <!-- Manage Buses Section (UNCHANGED) -->
         <section id="buses-section" class="content-section">
             <div class="section-header">
                 <h2 class="section-title">Manage Buses</h2>
@@ -295,7 +414,7 @@
             </div>
         </section>
 
-        <!-- Bus Stops Section -->
+        <!-- Bus Stops Section (UNCHANGED) -->
         <section id="stops-section" class="content-section">
             <div class="section-header">
                 <h2 class="section-title">Bus Stops Management</h2>
@@ -348,9 +467,107 @@
             </div>
         </section>
 
+        <!-- Place Departures Management Section -->
+        <section id="place-departures-section" class="content-section">
+            <div class="section-header">
+                <h2 class="section-title">Place Departures Management</h2>
+                <p class="section-subtitle">Add and manage specific place departures</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Add/Edit Place Departure Form -->
+                <div class="card-gradient">
+                    <h3 class="text-xl font-display font-bold text-dark mb-6">
+                        <span id="place-dep-form-title">Add New Departure</span>
+                    </h3>
+
+                    <form id="place-dep-form" class="space-y-4">
+                        <input type="hidden" id="edit-place-dep-id">
+
+                        <div class="form-group">
+                            <label for="pd-place-name" class="form-label">Place Name</label>
+                            <input type="text" id="pd-place-name" class="form-input" placeholder="e.g., Miyapur"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pd-bus-no" class="form-label">Bus Number</label>
+                            <input type="text" id="pd-bus-no" class="form-input" placeholder="e.g., 225L" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pd-bus-type" class="form-label">Bus Type</label>
+                            <select id="pd-bus-type" class="form-input" required>
+                                <option value="">Select type</option>
+                                <option value="express">Express</option>
+                                <option value="ordinary">Ordinary</option>
+                                <option value="deluxe">Deluxe</option>
+                                <option value="ac">AC</option>
+                            </select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label for="pd-departure-time" class="form-label">Departure Time</label>
+                            <input type="time" id="pd-departure-time" class="form-input" required>
+                        </div>
+
+                        <div class="flex gap-3 pt-2">
+                            <button type="submit" class="btn-primary flex-1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                <span id="place-dep-submit-text">Add Departure</span>
+                            </button>
+                            <button type="button" id="cancel-edit-place-dep"
+                                class="btn-secondary hidden">Cancel</button>
+                        </div>
+                    </form>
+
+                    <!-- Sync Button -->
+                    <div class="mt-8 pt-6 border-t border-gray-100">
+                        <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Utility Operations
+                        </h4>
+                        <button id="admin-sync-btn"
+                            class="w-full py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                            Sync from Bus Timings
+                        </button>
+                        <p class="text-xs text-gray-400 mt-2 text-center">Caution: This will overwrite existing manual
+                            entries</p>
+                    </div>
+                </div>
+
+                <!-- Place Departures List -->
+                <div class="card-gradient">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-display font-bold text-dark">All Departures</h3>
+                        <div class="flex gap-2">
+                            <input type="text" id="place-dep-filter"
+                                class="px-3 py-1 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                placeholder="Filter by place...">
+                            <button id="refresh-place-deps" class="text-secondary hover:text-primary transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="place-deps-list" class="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
+                </div>
+            </div>
+        </section>
+
     </main>
 
-    <!-- Admin Login Modal -->
+    <!-- Admin Login Modal (UNCHANGED) -->
     <div id="admin-modal" class="modal hidden">
         <div class="modal-overlay"></div>
         <div class="modal-content">
@@ -386,7 +603,7 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
+    <!-- Toast Notification (UNCHANGED) -->
     <div id="toast" class="toast hidden">
         <div class="toast-content">
             <svg class="toast-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -396,12 +613,12 @@
         </div>
     </div>
 
-    <!-- Loading Overlay -->
+    <!-- Loading Overlay (UNCHANGED) -->
     <div id="loading-overlay" class="loading-overlay hidden">
         <div class="loading-spinner"></div>
     </div>
 
-    
+
     <!-- Script -->
     <script src="script.js"></script>
 </body>
