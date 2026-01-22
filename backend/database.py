@@ -38,10 +38,41 @@ if DATABASE_URL:
         conn.commit()
         cursor.close()
         conn.close()
+        
+    def create_place_departures_table():
+        """
+        New table specifically for place-based search
+        Stores: place_name, bus_no, bus_type, departure_time
+        """
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        # Check if destination column exists (for migration)
+        cursor.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='place_departures' AND column_name='destination'
+        """)
+        if cursor.fetchone():
+            cursor.execute("DROP TABLE place_departures CASCADE")
+            conn.commit()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS place_departures(
+                departure_id SERIAL PRIMARY KEY,
+                place_name TEXT NOT NULL,
+                bus_no TEXT NOT NULL,
+                bus_type TEXT NOT NULL,
+                departure_time TEXT NOT NULL
+            )
+        """)
+        conn.commit()
+        conn.close()
+        
 else:
     import sqlite3
     
-    DB_NAME = "citybus_advisor.db"
+    DB_NAME = ".citybus_advisor.db"
     
     def get_connection():
         conn = sqlite3.connect(DB_NAME)
@@ -71,7 +102,37 @@ else:
         cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id INTEGER PRIMARY KEY AUTOINCREMENT, stop_name TEXT UNIQUE NOT NULL)")
         conn.commit()
         conn.close()
-           
+    def create_place_departures_table():
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Check if destination column exists (for migration)
+        cursor.execute("PRAGMA table_info(place_departures)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if 'destination' in columns:
+            cursor.execute("DROP TABLE place_departures")
+            conn.commit()
+
+        cursor.execute("""
+                CREATE TABLE IF NOT EXISTS place_departures(
+                    departure_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    place_name TEXT NOT NULL,
+                    bus_no TEXT NOT NULL,
+                    bus_type TEXT NOT NULL,
+                    departure_time TEXT NOT NULL
+                )
+            """)
+        
+        # Create index for faster queries
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_place_name 
+            ON place_departures(place_name)
+        """)
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
 def get_db():
     conn = get_connection()
     try:
