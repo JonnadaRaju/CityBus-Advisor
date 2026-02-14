@@ -355,10 +355,6 @@ def delete_place_departure(departure_id: int, db: Connection = Depends(get_db)):
     return {"message": "Departure deleted successfully"}
 
 
-# ==========================================
-# UTILITY ENDPOINT: Sync from existing buses
-# ==========================================
-
 @app.post("/place_departures/sync")
 def sync_place_departures_from_buses(db: Connection = Depends(get_db)):
     """
@@ -367,10 +363,8 @@ def sync_place_departures_from_buses(db: Connection = Depends(get_db)):
     """
     cursor = db.cursor()
     
-    # First, clear existing place_departures
     cursor.execute("DELETE FROM place_departures")
     
-    # Get all buses with their timings
     rows = cursor.execute("""
         SELECT 
             b.start_bus as place_name,
@@ -387,7 +381,6 @@ def sync_place_departures_from_buses(db: Connection = Depends(get_db)):
         cursor.close()
         return {"message": "No data to sync"}
     
-    # Insert into place_departures
     data = [
         (row["place_name"].lower(), row["bus_no"], 
          row["bus_type"].lower(), 

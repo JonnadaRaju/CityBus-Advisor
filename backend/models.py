@@ -45,3 +45,4 @@ class PlaceDeparture(BaseModel):
     bus_no: str
     bus_type: str
     departure_time: str
+    

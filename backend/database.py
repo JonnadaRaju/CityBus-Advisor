@@ -47,7 +47,6 @@ if DATABASE_URL:
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Check if destination column exists (for migration)
         cursor.execute("""
             SELECT column_name 
             FROM information_schema.columns 
@@ -85,6 +84,7 @@ else:
         
         cursor.execute("CREATE TABLE IF NOT EXISTS buses(bus_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_no TEXT NOT NULL, bus_type TEXT NOT NULL, start_bus TEXT NOT NULL, end_bus TEXT NOT NULL)")
         conn.commit()
+        cursor.close()
         conn.close()
         
     def create_bus_timings():
@@ -93,6 +93,7 @@ else:
         
         cursor.execute("CREATE TABLE IF NOT EXISTS bus_timings(timing_id INTEGER PRIMARY KEY AUTOINCREMENT, bus_id INTEGER NOT NULL, trip_time TEXT NOT NULL, FOREIGN KEY (bus_id) REFERENCES buses(bus_id))")    
         conn.commit()
+        cursor.close()
         conn.close()
         
     def create_stops_table():
@@ -101,12 +102,12 @@ else:
         
         cursor.execute("CREATE TABLE IF NOT EXISTS stops(stop_id INTEGER PRIMARY KEY AUTOINCREMENT, stop_name TEXT UNIQUE NOT NULL)")
         conn.commit()
+        cursor.close()
         conn.close()
     def create_place_departures_table():
         conn = get_connection()
         cursor = conn.cursor()
         
-        # Check if destination column exists (for migration)
         cursor.execute("PRAGMA table_info(place_departures)")
         columns = [column[1] for column in cursor.fetchall()]
         if 'destination' in columns:
@@ -123,7 +124,6 @@ else:
                 )
             """)
         
-        # Create index for faster queries
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_place_name 
             ON place_departures(place_name)
